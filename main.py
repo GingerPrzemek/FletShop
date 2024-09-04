@@ -81,7 +81,11 @@ class Item(ft.Column):
         self.update()
 
     def save_clicked(self, e):
+        if self.page.client_storage.contains_key(self.item_name):
+            self.page.client_storage.remove(self.item_name)
         self.display_item.label = self.edit_name.value
+        self.item_name = self.edit_name.value
+        self.page.client_storage.set(self.item_name, [self.item_name, self.price.value, self.quantity.value])
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
