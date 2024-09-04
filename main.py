@@ -1,14 +1,14 @@
 import flet as ft
 
 class Item(ft.Column):
-    def __init__(self, item_name, item_price, item_quantity, item_status_change, item_bought_change, item_delete):
+    def __init__(self, item_name, item_price, item_quantity):
         super().__init__()
         self.completed = False
         self.bought = False
         self.item_name = item_name
-        self.item_status_change = item_status_change
-        self.item_bought_change = item_bought_change
-        self.item_delete = item_delete
+        self.item_status_change = None
+        self.item_bought_change = None
+        self.item_delete = None
         self.display_item = ft.Checkbox(value=False, label=self.item_name, on_change=self.status_changed)
         self.bought_item = ft.Checkbox(value=False, label="bought", on_change = self.bought_changed)
         self.quantity = ft.TextField(value=item_quantity, text_align= "right", width = 50, input_filter=ft.InputFilter(allow=True, regex_string=r"^\d*\.?\d*$",replacement_string=""))
@@ -61,6 +61,11 @@ class Item(ft.Column):
             ],
         )
         self.controls = [self.display_view, self.edit_view]
+
+    def functioner(self, item_status_change, item_bought_change, item_delete):
+        self.item_status_change = item_status_change
+        self.item_bought_change = item_bought_change
+        self.item_delete = item_delete
 
     def status_changed(self, e):
         self.completed = self.display_item.value
@@ -147,7 +152,8 @@ class ShopApp(ft.Column):
         if len(key_list) > 0:
             for thing in key_list:
                 load_elements = self.page.client_storage.get(thing)
-                load_item = Item(load_elements[0], load_elements[1], load_elements[2], load_elements[3], load_elements[4], load_elements[5])
+                load_item = Item(load_elements[0], load_elements[1], load_elements[2])
+                load_item.functioner(self.item_status_change, self.item_bought_change, self.item_delete)
                 self.items_view.controls.append(load_item)
                 self.update()
 
@@ -171,7 +177,7 @@ class ShopApp(ft.Column):
                 total += float(item.quantity.value) * float(item.price.value)
                 cur_value += float(item.quantity.value) * float(item.price.value)
             self.items_left.value = f"{count} items to be bought\nCurrent basket value {cur_value}\nTotal basket value {total}"
-            self.page.client_storage.set(item.item_name, [item.item_name, item.price.value, item.quantity.value, item.item_status_change, item.item_bought_change, self.item_delete])
+            self.page.client_storage.set(item.item_name, [item.item_name, item.price.value, item.quantity.value])
 
     def tabs_changed(self, e):
         self.update()
@@ -184,7 +190,8 @@ class ShopApp(ft.Column):
 
     def add_clicked(self, e):
         if self.new_item.value:
-            item = Item(self.new_item.value, self.new_price.value, self.new_quantity.value, self.item_status_change, self.item_bought_change, self.item_delete)
+            item = Item(self.new_item.value, self.new_price.value, self.new_quantity.value)
+            item.functioner(self.item_status_change, self.item_bought_change, self.item_delete)
             self.items_view.controls.append(item)
             self.new_item.value = ""
             self.new_item.focus()
